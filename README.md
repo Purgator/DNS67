@@ -23,22 +23,112 @@ browsing traffic, and nothing leaves your device.
 
 ## Install
 
-Grab `app/build/outputs/apk/debug/app-debug.apk`, copy it to the phone and install it
-(you may need to allow "install unknown apps" for your file manager). Open the app,
-tap **Start blocking**, accept the VPN dialog once — done.
+Build (or grab a previously built) `app/build/outputs/apk/release/app-release.apk`, copy it
+to the phone and install it (you may need to allow "install unknown apps" for your file
+manager, and confirm the Google Play Protect prompt shown for sideloaded apps). Open the
+app, tap **Start blocking**, accept the VPN dialog once — done.
 
 Requires Android 8.0 (API 26) or newer.
 
-## Build from source
+## Development setup
 
-The repo is a standard Gradle/Kotlin Android project (AGP 8.5, compile/target SDK 34).
+A standard Gradle/Kotlin Android project: AGP 8.5.2, Gradle 8.7 (wrapper included),
+Kotlin 1.9, compile/target SDK 34, min SDK 26. No exotic dependencies — appcompat,
+material, preference-ktx, JUnit.
+
+### 1. Prerequisites
+
+- **JDK 17** (`java -version` should say 17.x)
+- **Android SDK** — either of:
+  - *Android Studio* (easiest): install it, open the repo folder, let it sync. It manages
+    the SDK and writes `local.properties` for you. Skip to step 4.
+  - *Command line only*: download the [command-line tools](https://developer.android.com/studio#command-line-tools-only),
+    then install the needed packages:
+    ```
+    sdkmanager --sdk_root=<sdk-dir> "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+    ```
+
+### 2. Clone and point Gradle at the SDK
 
 ```
-gradlew.bat assembleDebug        # or open the folder in Android Studio
+git clone <repo-url> DNS67
+cd DNS67
 ```
 
-`local.properties` must point to an Android SDK (`sdk.dir=...`). The `.tools/` folder,
-if present, contains a throwaway local Gradle + SDK used for CI-style command-line builds.
+Create `local.properties` at the repo root (gitignored, machine-specific):
+
+```properties
+sdk.dir=C:/path/to/android-sdk
+```
+
+### 3. Build and test
+
+```
+gradlew.bat assembleDebug          # debug APK -> app/build/outputs/apk/debug/
+gradlew.bat testDebugUnitTest      # unit tests (packet crafting, DNS, blocklist)
+gradlew.bat assembleRelease        # signed release APK (needs the keystore, see below)
+```
+
+Always run the unit tests after touching `PacketCraft`, `PacketProcessor` or
+`BlocklistManager` — they verify checksums and DNS wire format against an independent
+reference implementation, which is the code most likely to break subtly.
+
+### 4. Release signing (optional, needed for `assembleRelease`)
+
+Release builds are signed only when `keystore.properties` exists at the repo root.
+Both it and `release.keystore` are **gitignored — never commit them**. A base64 backup
+of the keystore and its passwords lives in Bitwarden (secure note
+"DNS67 release.keystore"). To restore on a new machine, copy the base64 text
+to the clipboard and run in PowerShell:
+
+```powershell
+[IO.File]::WriteAllBytes("release.keystore", [Convert]::FromBase64String((Get-Clipboard -Raw).Trim()))
+```
+
+then recreate `keystore.properties`:
+
+```properties
+storeFile=../release.keystore
+storePassword=<in Bitwarden>
+keyAlias=adblocker
+keyPassword=<in Bitwarden>
+```
+
+Keep signing with this key: Android only installs updates whose signature matches the
+installed app. Debug builds use the auto-generated debug key and cannot update a
+release install (uninstall first, or use debug builds throughout while developing).
+
+### 5. Deploy to a phone
+
+With USB debugging enabled on the device:
+
+```
+adb install -r app/build/outputs/apk/release/app-release.apk
+adb logcat -s AdBlockVpnService PacketProcessor BlocklistManager AdBlockerMain
+```
+
+The second command tails the app's own log tags — start there when debugging.
+
+### Code map
+
+| Path | Role |
+|---|---|
+| `vpn/AdBlockVpnService.kt` | Foreground service: VPN lifecycle, tun read loop, retry/backoff |
+| `vpn/PacketProcessor.kt` | Per-packet flow: block or forward, upstream fallback |
+| `vpn/PacketCraft.kt` | Pure byte-level IP/UDP/TCP/DNS crafting — fully unit-tested, no Android deps |
+| `core/BlocklistManager.kt` | Hosts parsing, suffix matching, download/refresh |
+| `core/Prefs.kt` | Typed SharedPreferences access, all defaults |
+| `core/BootReceiver.kt` | Auto-start on boot / app update |
+| `MainActivity.kt` | UI + the permission/consent flow (order matters — see comments) |
+| `SettingsActivity.kt` | Preference screen (`res/xml/preferences.xml`) |
+
+Gotchas learned the hard way (do not regress):
+- The VPN service **must stay `android:exported="true"`** — the system consent dialog
+  silently refuses otherwise.
+- Never launch two system dialogs at once (permission + VPN consent): sequence them,
+  or the consent auto-cancels.
+- Keep `applicationId` (`fr.arichard.adblocker`) unchanged — changing it makes a new app.
+- Bump `versionCode` on every build you intend to install on a device.
 
 ## How it works
 
