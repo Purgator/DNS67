@@ -18,6 +18,10 @@
     <string name="refresh_failed">Update failed: %1$s</string>
 
     <string name="vpn_permission_denied">The VPN permission is required to filter DNS queries.</string>
+    <string name="vpn_consent_title">VPN permission needed</string>
+    <string name="vpn_consent_message">To filter DNS queries, Android must allow this app to act as a local VPN. Nothing is sent to any server — filtering happens entirely on your phone.\n\nTap "Try again" and choose OK in the Android dialog.</string>
+    <string name="try_again">Try again</string>
+    <string name="vpn_prepare_failed">Cannot request the VPN permission: %1$s. If another VPN app is set to "Always-on", disable that first in Settings → Network → VPN.</string>
     <string name="hint_auto_start">Tip: for the most reliable auto-start, enable Always-on VPN for this app in Android Settings → Network → VPN.</string>
 
     <string name="notification_channel">VPN status</string>
