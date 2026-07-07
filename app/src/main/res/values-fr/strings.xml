@@ -22,6 +22,8 @@
     <string name="vpn_consent_message">Pour filtrer les requêtes DNS, Android doit autoriser cette appli à agir comme VPN local. Rien n\'est envoyé vers un serveur — le filtrage se fait entièrement sur votre téléphone.\n\nAppuyez sur « Réessayer » puis choisissez OK dans la boîte de dialogue Android.</string>
     <string name="try_again">Réessayer</string>
     <string name="vpn_prepare_failed">Impossible de demander l\'autorisation VPN : %1$s. Si une autre appli VPN est en mode « VPN permanent », désactivez-la d\'abord dans Paramètres → Réseau → VPN.</string>
+    <string name="vpn_blocked_by_other">Android a refusé la demande VPN car %1$s est actuellement actif. Un seul VPN peut fonctionner à la fois.\n\nAllez dans Paramètres → Réseau et Internet → VPN, désactivez l\'autre VPN (et son « VPN permanent » le cas échéant), puis appuyez sur « Réessayer ».</string>
+    <string name="vpn_no_handler">Cet appareil n\'a pas affiché la boîte de dialogue de confirmation VPN (son composant de dialogue VPN est peut-être désactivé).\n\nEssayez : Paramètres → Réseau et Internet → VPN → AdBlocker → activez-le ici, ou vérifiez qu\'aucune politique d\'appareil / profil professionnel ne bloque la configuration VPN.</string>
     <string name="hint_auto_start">Astuce : pour un démarrage automatique fiable, activez le VPN permanent pour cette appli dans Paramètres Android → Réseau → VPN.</string>
 
     <string name="notification_channel">État du VPN</string>
