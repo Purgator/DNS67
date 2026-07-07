@@ -2,6 +2,8 @@
 build/
 local.properties
 .tools/
+release.keystore
+keystore.properties
 .idea/
 *.iml
 captures/
