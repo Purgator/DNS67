@@ -102,7 +102,7 @@ object BlocklistManager {
             connection.connectTimeout = 20_000
             connection.readTimeout = 30_000
             connection.instanceFollowRedirects = true
-            connection.setRequestProperty("User-Agent", "AdBlocker4Android/1.0")
+            connection.setRequestProperty("User-Agent", "DNS67/1.0")
             try {
                 if (connection.responseCode !in 200..299) {
                     return "HTTP ${connection.responseCode}"

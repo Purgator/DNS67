@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">AdBlocker</string>
+    <string name="app_name">DNS67</string>
 
     <string name="status_on">Protection active</string>
     <string name="status_off">Protection off</string>
@@ -23,7 +23,7 @@
     <string name="try_again">Try again</string>
     <string name="vpn_prepare_failed">Cannot request the VPN permission: %1$s. If another VPN app is set to "Always-on", disable that first in Settings → Network → VPN.</string>
     <string name="vpn_blocked_by_other">Android refused the VPN request because %1$s is currently active. Only one VPN can run at a time.\n\nGo to Settings → Network &amp; internet → VPN, turn off the other VPN (and disable its "Always-on VPN" if set), then tap "Try again".</string>
-    <string name="vpn_no_handler">This device did not show the VPN confirmation dialog (its VPN dialog component may be disabled).\n\nTry: Settings → Network &amp; internet → VPN → AdBlocker → enable it there, or check that no work-profile / device policy blocks VPN configuration.</string>
+    <string name="vpn_no_handler">This device did not show the VPN confirmation dialog (its VPN dialog component may be disabled).\n\nTry: Settings → Network &amp; internet → VPN → DNS67 → enable it there, or check that no work-profile / device policy blocks VPN configuration.</string>
     <string name="hint_auto_start">Tip: for the most reliable auto-start, enable Always-on VPN for this app in Android Settings → Network → VPN.</string>
 
     <string name="notification_channel">VPN status</string>

@@ -1,6 +1,8 @@
-# AdBlocker4Android
+# DNS67
 
-A self-contained, **no-root** Android ad blocker. It registers a local VPN whose only job
+A self-contained, **no-root** Android ad blocker — the name tips its hat to
+[DNS66](https://github.com/julian-klode/dns66), whose DNS-filtering approach it follows,
+plus one (six seveeen 🙌). It registers a local VPN whose only job
 is to filter DNS: queries for known advertising/tracking domains are answered locally with
 `0.0.0.0`, everything else is forwarded untouched to a real DNS resolver. No traffic other
 than DNS ever enters the tunnel, so there is no speed or battery penalty on your actual

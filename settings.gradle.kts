@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AdBlocker4Android"
+rootProject.name = "DNS67"
 include(":app")
