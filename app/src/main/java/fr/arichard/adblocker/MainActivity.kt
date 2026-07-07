@@ -32,12 +32,17 @@ class MainActivity : AppCompatActivity() {
             if (result.resultCode == Activity.RESULT_OK) {
                 startVpn()
             } else {
-                Toast.makeText(this, R.string.vpn_permission_denied, Toast.LENGTH_LONG).show()
+                showVpnConsentDialog()
             }
         }
 
+    // Whatever the user decides about notifications, continue to the VPN consent step:
+    // the two system dialogs must never be shown at the same time, or the VPN one
+    // gets auto-cancelled.
     private val notificationPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* optional */ }
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            requestVpnConsent()
+        }
 
     private val updateUi = object : Runnable {
         override fun run() {
@@ -57,13 +62,7 @@ class MainActivity : AppCompatActivity() {
                 prefs.vpnDesired = false
                 AdBlockVpnService.stop(this)
             } else {
-                requestNotificationPermissionIfNeeded()
-                val consentIntent = VpnService.prepare(this)
-                if (consentIntent != null) {
-                    vpnConsentLauncher.launch(consentIntent)
-                } else {
-                    startVpn()
-                }
+                beginStartFlow()
             }
         }
 
@@ -87,18 +86,46 @@ class MainActivity : AppCompatActivity() {
         handler.removeCallbacks(updateUi)
     }
 
-    private fun startVpn() {
-        prefs.vpnDesired = true
-        AdBlockVpnService.start(this)
-    }
-
-    private fun requestNotificationPermissionIfNeeded() {
+    /** Step 1: notification permission (Android 13+), then the VPN consent dialog. */
+    private fun beginStartFlow() {
         if (Build.VERSION.SDK_INT >= 33 &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
             PackageManager.PERMISSION_GRANTED
         ) {
             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            requestVpnConsent()
         }
+    }
+
+    /** Step 2: ask Android for the VPN permission, or start right away if already granted. */
+    private fun requestVpnConsent() {
+        val consentIntent = try {
+            VpnService.prepare(this)
+        } catch (e: Exception) {
+            // Another app holds an always-on VPN lock, or a similar system restriction.
+            Toast.makeText(this, getString(R.string.vpn_prepare_failed, e.message), Toast.LENGTH_LONG).show()
+            return
+        }
+        if (consentIntent != null) {
+            vpnConsentLauncher.launch(consentIntent)
+        } else {
+            startVpn()
+        }
+    }
+
+    private fun showVpnConsentDialog() {
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.vpn_consent_title)
+            .setMessage(R.string.vpn_consent_message)
+            .setPositiveButton(R.string.try_again) { _, _ -> requestVpnConsent() }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun startVpn() {
+        prefs.vpnDesired = true
+        AdBlockVpnService.start(this)
     }
 
     private fun refreshBlocklist() {
