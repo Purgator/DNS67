@@ -4,12 +4,15 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.text.format.DateUtils
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -27,12 +30,18 @@ class MainActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var refreshing = false
 
+    private companion object {
+        const val TAG = "AdBlockerMain"
+        const val NO_CONSENT_HANDLER = -999
+    }
+
     private val vpnConsentLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            Log.i(TAG, "VPN consent result: code=${result.resultCode} (OK=${Activity.RESULT_OK})")
             if (result.resultCode == Activity.RESULT_OK) {
                 startVpn()
             } else {
-                showVpnConsentDialog()
+                showVpnConsentDialog(result.resultCode)
             }
         }
 
@@ -104,20 +113,56 @@ class MainActivity : AppCompatActivity() {
             VpnService.prepare(this)
         } catch (e: Exception) {
             // Another app holds an always-on VPN lock, or a similar system restriction.
+            Log.e(TAG, "VpnService.prepare() threw", e)
             Toast.makeText(this, getString(R.string.vpn_prepare_failed, e.message), Toast.LENGTH_LONG).show()
             return
         }
-        if (consentIntent != null) {
-            vpnConsentLauncher.launch(consentIntent)
-        } else {
+        Log.i(TAG, "prepare() -> ${consentIntent?.let { "consent intent $it" } ?: "already granted"}")
+
+        if (consentIntent == null) {
             startVpn()
+            return
+        }
+
+        try {
+            vpnConsentLauncher.launch(consentIntent)
+        } catch (e: android.content.ActivityNotFoundException) {
+            Log.e(TAG, "No activity handles the VPN consent intent", e)
+            showVpnConsentDialog(NO_CONSENT_HANDLER)
+        } catch (e: Exception) {
+            Log.e(TAG, "Launching VPN consent failed", e)
+            Toast.makeText(this, getString(R.string.vpn_prepare_failed, e.message), Toast.LENGTH_LONG).show()
         }
     }
 
-    private fun showVpnConsentDialog() {
+    /** Name of another app currently providing a VPN, or null if none is active. */
+    private fun activeOtherVpnPackage(): String? {
+        return try {
+            val cm = getSystemService(ConnectivityManager::class.java) ?: return null
+            cm.allNetworks.firstOrNull { network ->
+                cm.getNetworkCapabilities(network)
+                    ?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true &&
+                    !AdBlockVpnService.isRunning
+            }?.let { "another VPN app" }
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not inspect active networks", e)
+            null
+        }
+    }
+
+    private fun showVpnConsentDialog(resultCode: Int) {
+        val otherVpn = activeOtherVpnPackage()
+        val message = when {
+            resultCode == NO_CONSENT_HANDLER ->
+                getString(R.string.vpn_no_handler)
+            otherVpn != null ->
+                getString(R.string.vpn_blocked_by_other, otherVpn)
+            else ->
+                getString(R.string.vpn_consent_message)
+        }
         com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
             .setTitle(R.string.vpn_consent_title)
-            .setMessage(R.string.vpn_consent_message)
+            .setMessage(message)
             .setPositiveButton(R.string.try_again) { _, _ -> requestVpnConsent() }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
