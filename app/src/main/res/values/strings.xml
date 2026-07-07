@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AdBlocker</string>
+
+    <string name="status_on">Protection active</string>
+    <string name="status_off">Protection off</string>
+    <string name="start_blocking">Start blocking</string>
+    <string name="stop_blocking">Stop blocking</string>
+    <string name="stat_queries">DNS queries</string>
+    <string name="stat_blocked">Blocked</string>
+
+    <string name="blocklist_loading">Loading blocklist…</string>
+    <string name="blocklist_info">%1$d domains blocked · list updated %2$s</string>
+    <string name="blocklist_bundled">from bundled list</string>
+    <string name="refresh_blocklist">Update blocklist</string>
+    <string name="refreshing">Updating…</string>
+    <string name="refresh_done">Blocklist updated: %1$d domains</string>
+    <string name="refresh_failed">Update failed: %1$s</string>
+
+    <string name="vpn_permission_denied">The VPN permission is required to filter DNS queries.</string>
+    <string name="hint_auto_start">Tip: for the most reliable auto-start, enable Always-on VPN for this app in Android Settings → Network → VPN.</string>
+
+    <string name="notification_channel">VPN status</string>
+    <string name="notification_title">Ad blocking active</string>
+    <string name="notification_text">DNS queries to ad domains are being blocked</string>
+    <string name="action_stop">Stop</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="pref_category_dns">DNS</string>
+    <string name="pref_upstream_dns">Upstream DNS server</string>
+    <string name="pref_upstream_dns_summary">IP address queries are forwarded to (default 1.1.1.1)</string>
+    <string name="pref_upstream_dns2">Fallback DNS server</string>
+    <string name="pref_upstream_dns2_summary">Used when the primary server does not answer (default 8.8.8.8)</string>
+    <string name="pref_category_blocklist">Blocklist</string>
+    <string name="pref_blocklist_url">Blocklist URL</string>
+    <string name="pref_blocklist_url_summary">Hosts-format list downloaded on update</string>
+    <string name="pref_auto_refresh">Auto-update blocklist</string>
+    <string name="pref_auto_refresh_summary">Download a fresh list about once a week</string>
+    <string name="pref_custom_blocked">Extra blocked domains</string>
+    <string name="pref_custom_blocked_summary">One domain per line; subdomains are blocked too</string>
+    <string name="pref_custom_allowed">Allowed domains</string>
+    <string name="pref_custom_allowed_summary">Never block these domains (overrides the blocklist)</string>
+    <string name="pref_category_startup">Startup</string>
+    <string name="pref_auto_start">Start on boot</string>
+    <string name="pref_auto_start_summary">Resume blocking automatically after a restart</string>
+</resources>

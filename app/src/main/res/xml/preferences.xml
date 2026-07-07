@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory android:title="@string/pref_category_dns">
+        <EditTextPreference
+            android:key="upstream_dns"
+            android:title="@string/pref_upstream_dns"
+            android:summary="@string/pref_upstream_dns_summary"
+            android:defaultValue="1.1.1.1"
+            app:useSimpleSummaryProvider="false" />
+        <EditTextPreference
+            android:key="upstream_dns2"
+            android:title="@string/pref_upstream_dns2"
+            android:summary="@string/pref_upstream_dns2_summary"
+            android:defaultValue="8.8.8.8" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_category_blocklist">
+        <EditTextPreference
+            android:key="blocklist_url"
+            android:title="@string/pref_blocklist_url"
+            android:summary="@string/pref_blocklist_url_summary"
+            android:defaultValue="https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" />
+        <SwitchPreferenceCompat
+            android:key="auto_refresh"
+            android:title="@string/pref_auto_refresh"
+            android:summary="@string/pref_auto_refresh_summary"
+            android:defaultValue="true" />
+        <EditTextPreference
+            android:key="custom_blocked"
+            android:title="@string/pref_custom_blocked"
+            android:summary="@string/pref_custom_blocked_summary" />
+        <EditTextPreference
+            android:key="custom_allowed"
+            android:title="@string/pref_custom_allowed"
+            android:summary="@string/pref_custom_allowed_summary" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_category_startup">
+        <SwitchPreferenceCompat
+            android:key="auto_start"
+            android:title="@string/pref_auto_start"
+            android:summary="@string/pref_auto_start_summary"
+            android:defaultValue="true" />
+    </PreferenceCategory>
+
+</PreferenceScreen>
