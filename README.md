@@ -21,14 +21,22 @@ browsing traffic, and nothing leaves your device.
   extra blocked domains, allowlist (always wins), auto-update and auto-start toggles.
 - Subdomain matching: blocking `doubleclick.net` also blocks `stats.doubleclick.net`.
 
-## Install
+## 📥 Download & install (2 minutes, no technical skills needed)
 
-Build (or grab a previously built) `app/build/outputs/apk/release/app-release.apk`, copy it
-to the phone and install it (you may need to allow "install unknown apps" for your file
-manager, and confirm the Google Play Protect prompt shown for sideloaded apps). Open the
-app, tap **Start blocking**, accept the VPN dialog once — done.
+1. **On your Android phone**, open this link:
+   **[⬇ Download the latest DNS67 APK](https://github.com/Purgator/DNS67/releases/latest/download/DNS67.apk)**
+2. When the download finishes, tap the file (or open it from your notifications).
+3. Android may ask you to *allow installing apps from this source* — allow it, then
+   come back and tap the file again.
+4. If Google Play Protect shows a warning, tap **More details → Install anyway**
+   (the warning appears for every app installed outside the Play Store).
+5. Open **DNS67**, tap **Start blocking**, and accept the *Connection request* popup. Done —
+   ads are now blocked in all apps and browsers, on Wi-Fi and mobile data.
 
-Requires Android 8.0 (API 26) or newer.
+Requires Android 8.0 (2017) or newer. To stop blocking at any time, open the app and tap
+**Stop blocking**.
+
+All releases with changelogs: [Releases page](https://github.com/Purgator/DNS67/releases).
 
 ## Development setup
 
