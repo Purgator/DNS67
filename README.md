@@ -19,6 +19,13 @@ browsing traffic, and nothing leaves your device.
   (~78,000 domains) bundled in the APK, refreshes it weekly in the background.
 - **Manual configuration** — upstream DNS servers (primary + fallback), blocklist URL,
   extra blocked domains, allowlist (always wins), auto-update and auto-start toggles.
+- **Payments keep working** — a built-in allowlist exempts payment anti-fraud services
+  (ThreatMetrix, DataDome, iovation…) that hosts lists block but whose loss makes card
+  payments fail after 3-D Secure. Re-block any of them by adding the exact domain to
+  your custom blocked list.
+- **Recently blocked viewer** — when a site or app misbehaves, open *Recently blocked*
+  on the main screen right after the failure; the culprit domain is near the top and
+  one tap allowlists it.
 - Subdomain matching: blocking `doubleclick.net` also blocks `stats.doubleclick.net`.
 
 ## 📥 Download & install (2 minutes, no technical skills needed)

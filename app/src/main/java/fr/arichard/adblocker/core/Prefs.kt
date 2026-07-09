@@ -49,6 +49,13 @@ class Prefs(context: Context) {
         get() = sp.getString(KEY_NOTIFIED_UPDATE_VERSION, null)
         set(value) = sp.edit().putString(KEY_NOTIFIED_UPDATE_VERSION, value).apply()
 
+    /** Adds one domain to the user's allowed list (used by the recently-blocked dialog). */
+    fun appendCustomAllowed(domain: String) {
+        val current = sp.getString(KEY_CUSTOM_ALLOWED, "") ?: ""
+        val updated = if (current.isBlank()) domain else current.trimEnd() + "\n" + domain
+        sp.edit().putString(KEY_CUSTOM_ALLOWED, updated).apply()
+    }
+
     /** Set to true whenever the user manually starts the VPN, false when they stop it. */
     var vpnDesired: Boolean
         get() = sp.getBoolean(KEY_VPN_DESIRED, false)
