@@ -111,6 +111,8 @@ object BlocklistManager {
     class BlockedEvent(val domain: String) {
         var count: Int = 1
         var lastSeen: Long = System.currentTimeMillis()
+        /** UID of the app that sent the query, when the kernel could attribute it; -1 otherwise. */
+        var uid: Int = -1
     }
 
     private const val BLOCK_LOG_CAPACITY = 100
@@ -120,14 +122,15 @@ object BlocklistManager {
     }
 
     /** Called from the packet path for every blocked query. Cheap: map upsert. */
-    fun recordBlocked(domain: String) {
+    fun recordBlocked(domain: String, uid: Int = -1) {
         synchronized(blockLog) {
-            val event = blockLog[domain]
-            if (event != null) {
-                event.count++
-                event.lastSeen = System.currentTimeMillis()
+            val existing = blockLog[domain]
+            if (existing != null) {
+                existing.count++
+                existing.lastSeen = System.currentTimeMillis()
+                if (uid > 0) existing.uid = uid
             } else {
-                blockLog[domain] = BlockedEvent(domain)
+                blockLog[domain] = BlockedEvent(domain).also { if (uid > 0) it.uid = uid }
             }
         }
     }

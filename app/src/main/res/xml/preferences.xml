@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory android:title="@string/pref_category_dns">
         <EditTextPreference
             android:key="upstream_dns"
             android:title="@string/pref_upstream_dns"
             android:summary="@string/pref_upstream_dns_summary"
-            android:defaultValue="1.1.1.1"
-            app:useSimpleSummaryProvider="false" />
+            android:defaultValue="1.1.1.1" />
         <EditTextPreference
             android:key="upstream_dns2"
             android:title="@string/pref_upstream_dns2"
@@ -17,24 +15,32 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/pref_category_blocklist">
-        <EditTextPreference
+        <Preference
             android:key="blocklist_url"
-            android:title="@string/pref_blocklist_url"
-            android:summary="@string/pref_blocklist_url_summary"
-            android:defaultValue="https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts" />
+            android:title="@string/pref_blocklist" />
         <SwitchPreferenceCompat
             android:key="auto_refresh"
             android:title="@string/pref_auto_refresh"
             android:summary="@string/pref_auto_refresh_summary"
             android:defaultValue="true" />
-        <EditTextPreference
+        <Preference
             android:key="custom_blocked"
-            android:title="@string/pref_custom_blocked"
-            android:summary="@string/pref_custom_blocked_summary" />
-        <EditTextPreference
+            android:title="@string/pref_custom_blocked" />
+        <Preference
             android:key="custom_allowed"
-            android:title="@string/pref_custom_allowed"
-            android:summary="@string/pref_custom_allowed_summary" />
+            android:title="@string/pref_custom_allowed" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_category_diagnostics">
+        <Preference
+            android:key="open_recently_blocked"
+            android:title="@string/recently_blocked"
+            android:summary="@string/pref_recently_blocked_summary" />
+        <SwitchPreferenceCompat
+            android:key="debug_notifications"
+            android:title="@string/debug_notify_title"
+            android:summary="@string/debug_notify_summary"
+            android:defaultValue="false" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/pref_category_startup">

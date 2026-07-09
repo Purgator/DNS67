@@ -76,7 +76,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.refreshButton.setOnClickListener { refreshBlocklist() }
-        binding.blockedLogButton.setOnClickListener { showRecentlyBlocked() }
+        binding.blockedLogButton.setOnClickListener {
+            startActivity(Intent(this, RecentlyBlockedActivity::class.java))
+        }
         binding.settingsButton.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
@@ -176,46 +178,6 @@ class MainActivity : AppCompatActivity() {
     private fun startVpn() {
         prefs.vpnDesired = true
         AdBlockVpnService.start(this)
-    }
-
-    /**
-     * Shows the most recently blocked domains; tapping one offers to allowlist it.
-     * This is the self-service diagnostic for "site X stopped working": open it right
-     * after the failure, the culprit is near the top.
-     */
-    private fun showRecentlyBlocked() {
-        val events = BlocklistManager.recentlyBlocked()
-        if (events.isEmpty()) {
-            Toast.makeText(this, R.string.recently_blocked_empty, Toast.LENGTH_SHORT).show()
-            return
-        }
-        val items = events.map { event ->
-            "${event.domain}   ×${event.count} · ${
-                DateUtils.getRelativeTimeSpanString(
-                    event.lastSeen, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS
-                )
-            }"
-        }.toTypedArray()
-        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.recently_blocked)
-            .setItems(items) { _, which -> confirmAllowDomain(events[which].domain) }
-            .setNegativeButton(R.string.close, null)
-            .show()
-    }
-
-    private fun confirmAllowDomain(domain: String) {
-        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.allow_domain_title, domain))
-            .setMessage(R.string.allow_domain_message)
-            .setPositiveButton(R.string.allow) { _, _ ->
-                prefs.appendCustomAllowed(domain)
-                thread { BlocklistManager.load(applicationContext) }
-                Toast.makeText(
-                    this, getString(R.string.domain_allowed_toast, domain), Toast.LENGTH_LONG
-                ).show()
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
     }
 
     private fun refreshBlocklist() {

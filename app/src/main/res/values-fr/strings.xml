@@ -69,4 +69,32 @@
     <string name="allow">Autoriser</string>
     <string name="close">Fermer</string>
     <string name="domain_allowed_toast">%1$s est maintenant autorisé</string>
+
+    <string name="pref_blocklist">Liste de blocage</string>
+    <string name="preset_standard">Standard — pubs, traqueurs, malware (recommandé)</string>
+    <string name="preset_family">Famille — bloque aussi jeux d\'argent et sites adultes</string>
+    <string name="preset_comprehensive">Complète — bloque plus, risque de casse plus élevé</string>
+    <string name="preset_custom">URL personnalisée…</string>
+    <string name="preset_custom_title">URL de liste personnalisée</string>
+    <string name="custom_url_hint">https://…</string>
+    <string name="blocklist_downloading">Téléchargement de la liste…</string>
+    <string name="invalid_url">Saisissez une URL https:// valide</string>
+    <string name="invalid_domain">Saisissez un domaine valide, ex. exemple.com</string>
+    <string name="domain_list_empty">Aucun domaine — ajoutez-en un ci-dessous.</string>
+    <string name="domain_list_empty_summary">Aucun</string>
+    <string name="domain_list_add_hint">exemple.com</string>
+    <string name="add">Ajouter</string>
+    <string name="save">Enregistrer</string>
+    <plurals name="domains_count">
+        <item quantity="one">%d domaine</item>
+        <item quantity="other">%d domaines</item>
+    </plurals>
+
+    <string name="pref_category_diagnostics">Diagnostic</string>
+    <string name="pref_recently_blocked_summary">Voir ce qui a été bloqué et débloquer en un geste</string>
+    <string name="debug_notify_title">Alertes de blocage en temps réel</string>
+    <string name="debug_notify_summary">Notification silencieuse à chaque requête bloquée — utile pour trouver ce qui casse un site</string>
+    <string name="debug_channel">Alertes de blocage en temps réel</string>
+    <string name="debug_blocked_title">Bloqué : %1$s</string>
+    <string name="system_app">Système Android</string>
 </resources>
