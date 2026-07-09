@@ -61,4 +61,12 @@
     <string name="update_checking">Recherche de mises à jour…</string>
     <string name="update_none">Vous êtes à jour (v%1$s)</string>
     <string name="update_error">Échec de la vérification : %1$s</string>
+
+    <string name="recently_blocked">Bloqués récemment</string>
+    <string name="recently_blocked_empty">Aucun domaine bloqué pour l\'instant</string>
+    <string name="allow_domain_title">Autoriser %1$s ?</string>
+    <string name="allow_domain_message">Ce domaine (et ses sous-domaines) ne sera plus jamais bloqué. Utile quand un site, une appli ou un paiement ne fonctionne plus — le changement s\'applique immédiatement.</string>
+    <string name="allow">Autoriser</string>
+    <string name="close">Fermer</string>
+    <string name="domain_allowed_toast">%1$s est maintenant autorisé</string>
 </resources>

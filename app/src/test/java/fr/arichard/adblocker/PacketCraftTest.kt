@@ -264,6 +264,26 @@ class PacketCraftTest {
     }
 
     @Test
+    fun paymentDomainsAreAllowedByDefaultButUserBlockWins() {
+        // Default: payment anti-fraud domains are allowlisted even when the hosts list blocks them.
+        val allow = BlocklistManager.buildAllowSet(emptyList(), emptyList())
+        assertTrue("online-metrix.net" in allow)
+        BlocklistManager.setRulesForTest(
+            blockedSet = setOf("online-metrix.net", "ads.example.com"),
+            allowedSet = allow
+        )
+        assertFalse(BlocklistManager.isBlocked("h.online-metrix.net"))
+        assertFalse(BlocklistManager.isBlocked("api-sdk.datadome.co"))
+        assertTrue(BlocklistManager.isBlocked("ads.example.com"))
+
+        // A user explicitly re-blocking the domain overrides the built-in allowlist.
+        val allowReblocked = BlocklistManager.buildAllowSet(emptyList(), listOf("online-metrix.net"))
+        assertFalse("online-metrix.net" in allowReblocked)
+        BlocklistManager.setRulesForTest(setOf("online-metrix.net"), allowReblocked)
+        assertTrue(BlocklistManager.isBlocked("h.online-metrix.net"))
+    }
+
+    @Test
     fun realQueryForAllowedDomainIsNotBlocked() {
         BlocklistManager.setRulesForTest(setOf("ads.example.com"), emptySet())
         val dns = dnsQuery("www.wikipedia.org", PacketCraft.QTYPE_A)

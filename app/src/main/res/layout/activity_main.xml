@@ -104,11 +104,18 @@
             android:text="@string/refresh_blocklist" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/settingsButton"
+            android:id="@+id/blockedLogButton"
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:text="@string/recently_blocked" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/settingsButton"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:text="@string/settings_title" />
 
         <TextView

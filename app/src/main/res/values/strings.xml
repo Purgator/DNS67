@@ -61,4 +61,12 @@
     <string name="update_checking">Checking for updates…</string>
     <string name="update_none">You\'re up to date (v%1$s)</string>
     <string name="update_error">Update check failed: %1$s</string>
+
+    <string name="recently_blocked">Recently blocked</string>
+    <string name="recently_blocked_empty">No domains blocked yet</string>
+    <string name="allow_domain_title">Allow %1$s?</string>
+    <string name="allow_domain_message">This domain (and its subdomains) will never be blocked again. Use this when a website, app, or payment stops working — the change applies immediately.</string>
+    <string name="allow">Allow</string>
+    <string name="close">Close</string>
+    <string name="domain_allowed_toast">%1$s is now allowed</string>
 </resources>
