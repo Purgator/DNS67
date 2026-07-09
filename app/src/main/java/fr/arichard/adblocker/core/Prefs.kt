@@ -49,6 +49,10 @@ class Prefs(context: Context) {
         get() = sp.getString(KEY_NOTIFIED_UPDATE_VERSION, null)
         set(value) = sp.edit().putString(KEY_NOTIFIED_UPDATE_VERSION, value).apply()
 
+    var debugNotifications: Boolean
+        get() = sp.getBoolean(KEY_DEBUG_NOTIFICATIONS, false)
+        set(value) = sp.edit().putBoolean(KEY_DEBUG_NOTIFICATIONS, value).apply()
+
     /** Adds one domain to the user's allowed list (used by the recently-blocked dialog). */
     fun appendCustomAllowed(domain: String) {
         val current = sp.getString(KEY_CUSTOM_ALLOWED, "") ?: ""
@@ -79,6 +83,7 @@ class Prefs(context: Context) {
         const val KEY_AUTO_UPDATE = "auto_update"
         const val KEY_LAST_UPDATE_CHECK = "last_update_check"
         const val KEY_NOTIFIED_UPDATE_VERSION = "notified_update_version"
+        const val KEY_DEBUG_NOTIFICATIONS = "debug_notifications"
 
         const val DEFAULT_UPSTREAM = "1.1.1.1"
         const val DEFAULT_UPSTREAM2 = "8.8.8.8"

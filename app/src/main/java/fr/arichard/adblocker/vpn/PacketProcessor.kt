@@ -1,13 +1,18 @@
 package fr.arichard.adblocker.vpn
 
+import android.net.ConnectivityManager
 import android.net.VpnService
+import android.os.Build
+import android.system.OsConstants
 import android.util.Log
 import fr.arichard.adblocker.core.BlocklistManager
+import fr.arichard.adblocker.core.DebugNotifier
 import fr.arichard.adblocker.core.Prefs
 import java.io.FileOutputStream
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
+import java.net.InetSocketAddress
 import java.net.SocketTimeoutException
 import java.util.concurrent.SynchronousQueue
 import java.util.concurrent.ThreadPoolExecutor
@@ -74,7 +79,9 @@ class PacketProcessor(
 
         if (domain != null && BlocklistManager.isBlocked(domain)) {
             AdBlockVpnService.queriesBlocked.incrementAndGet()
-            BlocklistManager.recordBlocked(domain)
+            val uid = resolveQueryUid(clientIp, srcPort, serverIp)
+            BlocklistManager.recordBlocked(domain, uid)
+            if (prefs.debugNotifications) DebugNotifier.notifyBlocked(vpnService, domain, uid)
             val response = PacketCraft.buildBlockedDnsResponse(packet, dnsOffset, dnsLength)
             if (response != null) {
                 writeToTun(
@@ -158,6 +165,28 @@ class PacketProcessor(
             InetAddress.getByName(s)
         } catch (e: Exception) {
             null
+        }
+    }
+
+    private val connectivity: ConnectivityManager? by lazy {
+        vpnService.getSystemService(ConnectivityManager::class.java)
+    }
+
+    /**
+     * Asks the kernel which UID owns the socket behind a blocked query (API 29+,
+     * available to the active VPN). Returns -1 when unknown — including the common
+     * case where Android's shared resolver sent the query on an app's behalf.
+     */
+    private fun resolveQueryUid(srcIp: ByteArray, srcPort: Int, dstIp: ByteArray): Int {
+        if (Build.VERSION.SDK_INT < 29) return -1
+        return try {
+            connectivity?.getConnectionOwnerUid(
+                OsConstants.IPPROTO_UDP,
+                InetSocketAddress(InetAddress.getByAddress(srcIp), srcPort),
+                InetSocketAddress(InetAddress.getByAddress(dstIp), DNS_PORT)
+            ) ?: -1
+        } catch (e: Exception) {
+            -1
         }
     }
 
