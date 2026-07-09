@@ -38,6 +38,17 @@ class Prefs(context: Context) {
         get() = sp.getLong(KEY_LAST_REFRESH, 0L)
         set(value) = sp.edit().putLong(KEY_LAST_REFRESH, value).apply()
 
+    val autoUpdate: Boolean
+        get() = sp.getBoolean(KEY_AUTO_UPDATE, true)
+
+    var lastUpdateCheck: Long
+        get() = sp.getLong(KEY_LAST_UPDATE_CHECK, 0L)
+        set(value) = sp.edit().putLong(KEY_LAST_UPDATE_CHECK, value).apply()
+
+    var notifiedUpdateVersion: String?
+        get() = sp.getString(KEY_NOTIFIED_UPDATE_VERSION, null)
+        set(value) = sp.edit().putString(KEY_NOTIFIED_UPDATE_VERSION, value).apply()
+
     /** Set to true whenever the user manually starts the VPN, false when they stop it. */
     var vpnDesired: Boolean
         get() = sp.getBoolean(KEY_VPN_DESIRED, false)
@@ -58,6 +69,9 @@ class Prefs(context: Context) {
         const val KEY_CUSTOM_ALLOWED = "custom_allowed"
         const val KEY_LAST_REFRESH = "last_refresh"
         const val KEY_VPN_DESIRED = "vpn_desired"
+        const val KEY_AUTO_UPDATE = "auto_update"
+        const val KEY_LAST_UPDATE_CHECK = "last_update_check"
+        const val KEY_NOTIFIED_UPDATE_VERSION = "notified_update_version"
 
         const val DEFAULT_UPSTREAM = "1.1.1.1"
         const val DEFAULT_UPSTREAM2 = "8.8.8.8"

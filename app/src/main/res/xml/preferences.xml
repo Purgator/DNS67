@@ -45,4 +45,15 @@
             android:defaultValue="true" />
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="@string/pref_category_updates">
+        <SwitchPreferenceCompat
+            android:key="auto_update"
+            android:title="@string/pref_auto_update"
+            android:summary="@string/pref_auto_update_summary"
+            android:defaultValue="true" />
+        <Preference
+            android:key="check_updates_now"
+            android:title="@string/pref_check_updates" />
+    </PreferenceCategory>
+
 </PreferenceScreen>

@@ -80,8 +80,12 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
-        // Load the blocklist early so the domain counter is meaningful right away.
-        thread { BlocklistManager.ensureLoaded(applicationContext) }
+        // Load the blocklist early so the domain counter is meaningful right away,
+        // and take the opportunity to run the daily (self-throttled) update check.
+        thread {
+            BlocklistManager.ensureLoaded(applicationContext)
+            fr.arichard.adblocker.core.UpdateManager.maybeDailyCheck(applicationContext)
+        }
     }
 
     override fun onResume() {
