@@ -163,11 +163,16 @@ class AdBlockVpnService : VpnService() {
             .addRoute(VPN_DNS, 32)
             .setBlocking(true)
             .setConfigureIntent(configureIntent)
-        // Without this, apps see only TRANSPORT_VPN on their active network and lose track
-        // of whether the real connection is Wi-Fi or cellular (e.g. Google Photos' "back up
-        // on Wi-Fi only" stops working). Null means "track whatever the real default network
-        // currently is" so its transport/metered status is still visible through the VPN.
+        // Track the real default network so its transport type shows through the VPN.
         builder.setUnderlyingNetworks(null)
+        // Android classifies a VPN network as METERED by default regardless of what is
+        // underneath it, which breaks every "Wi-Fi only" feature (Google Photos backup
+        // checks for an unmetered network, not literally Wi-Fi). setMetered(false) makes
+        // the VPN inherit meteredness from the underlying network instead: unmetered on
+        // Wi-Fi, metered on mobile data.
+        if (Build.VERSION.SDK_INT >= 29) {
+            builder.setMetered(false)
+        }
         try {
             // Our own traffic (blocklist downloads) never needs to go through the tunnel.
             builder.addDisallowedApplication(packageName)
