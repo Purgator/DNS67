@@ -163,7 +163,8 @@ Gotchas learned the hard way (do not regress):
   disable "secure DNS" in the browser or leave it to "use system default".
 - Ads served from the same domain as content (e.g. YouTube ads) cannot be blocked by DNS.
 - Only one VPN can run at a time on Android; starting another VPN stops this one.
-- Apps that gate a feature on "Wi-Fi only" (e.g. Google Photos backup) may misdetect the
-  connection type while any VPN is running, DNS67 included — the app sees `TRANSPORT_VPN`
-  and needs Android to forward the real network's transport through it. DNS67 requests this
-  (`setUnderlyingNetworks`, since v1.8); if you still see it on an older version, update.
+- Apps that gate a feature on "Wi-Fi only" (e.g. Google Photos backup) actually check for an
+  *unmetered* network, and Android marks any VPN as metered by default regardless of the real
+  connection — so those features silently stop while a VPN runs. DNS67 opts out
+  (`setMetered(false)`, since v1.10) so meteredness follows the underlying network again;
+  if you see this on an older version, update.
