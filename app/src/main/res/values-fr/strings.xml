@@ -17,7 +17,7 @@
     <string name="refresh_done">Liste mise à jour : %1$d domaines</string>
     <string name="refresh_failed">Échec de la mise à jour : %1$s</string>
 
-    <string name="vpn_permission_denied">L\'autorisation VPN est nécessaire pour filtrer les requêtes DNS.</string>
+    <string name="private_dns_warning">⚠ Le DNS privé est activé et contourne DNS67 — appuyez ici, puis réglez le DNS privé sur « Automatique » ou « Désactivé »</string>
     <string name="vpn_consent_title">Autorisation VPN requise</string>
     <string name="vpn_consent_message">Pour filtrer les requêtes DNS, Android doit autoriser cette appli à agir comme VPN local. Rien n\'est envoyé vers un serveur — le filtrage se fait entièrement sur votre téléphone.\n\nAppuyez sur « Réessayer » puis choisissez OK dans la boîte de dialogue Android.</string>
     <string name="try_again">Réessayer</string>
@@ -38,14 +38,10 @@
     <string name="pref_upstream_dns2">Serveur DNS de secours</string>
     <string name="pref_upstream_dns2_summary">Utilisé si le serveur principal ne répond pas (défaut 8.8.8.8)</string>
     <string name="pref_category_blocklist">Liste de blocage</string>
-    <string name="pref_blocklist_url">URL de la liste</string>
-    <string name="pref_blocklist_url_summary">Liste au format hosts téléchargée lors des mises à jour</string>
     <string name="pref_auto_refresh">Mise à jour automatique</string>
     <string name="pref_auto_refresh_summary">Télécharge une liste fraîche environ une fois par semaine</string>
     <string name="pref_custom_blocked">Domaines bloqués en plus</string>
-    <string name="pref_custom_blocked_summary">Un domaine par ligne ; les sous-domaines sont aussi bloqués</string>
     <string name="pref_custom_allowed">Domaines autorisés</string>
-    <string name="pref_custom_allowed_summary">Ne jamais bloquer ces domaines (prioritaire sur la liste)</string>
     <string name="pref_category_startup">Démarrage</string>
     <string name="pref_auto_start">Démarrer au démarrage</string>
     <string name="pref_auto_start_summary">Reprendre le blocage automatiquement après un redémarrage</string>
@@ -67,7 +63,6 @@
     <string name="allow_domain_title">Autoriser %1$s ?</string>
     <string name="allow_domain_message">Ce domaine (et ses sous-domaines) ne sera plus jamais bloqué. Utile quand un site, une appli ou un paiement ne fonctionne plus — le changement s\'applique immédiatement.</string>
     <string name="allow">Autoriser</string>
-    <string name="close">Fermer</string>
     <string name="domain_allowed_toast">%1$s est maintenant autorisé</string>
 
     <string name="pref_blocklist">Liste de blocage</string>
