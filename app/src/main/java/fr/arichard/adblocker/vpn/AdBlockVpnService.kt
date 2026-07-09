@@ -18,6 +18,7 @@ import fr.arichard.adblocker.MainActivity
 import fr.arichard.adblocker.R
 import fr.arichard.adblocker.core.BlocklistManager
 import fr.arichard.adblocker.core.Prefs
+import fr.arichard.adblocker.core.UpdateManager
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.util.concurrent.atomic.AtomicLong
@@ -27,6 +28,7 @@ class AdBlockVpnService : VpnService() {
 
     private var vpnInterface: ParcelFileDescriptor? = null
     private var vpnThread: Thread? = null
+    private var maintenanceThread: Thread? = null
     private var processor: PacketProcessor? = null
 
     @Volatile private var stopping = false
@@ -98,7 +100,7 @@ class AdBlockVpnService : VpnService() {
     private fun runVpn() {
         val prefs = Prefs(this)
         BlocklistManager.ensureLoaded(this)
-        maybeAutoRefresh(prefs)
+        startMaintenanceThread(prefs)
 
         var attempts = 0
         while (!stopping) {
@@ -175,13 +177,32 @@ class AdBlockVpnService : VpnService() {
         return builder.establish()
     }
 
-    private fun maybeAutoRefresh(prefs: Prefs) {
-        if (!prefs.autoRefresh) return
-        val age = System.currentTimeMillis() - prefs.lastRefreshMillis
-        if (age < REFRESH_INTERVAL_MS) return
-        thread(name = "BlocklistAutoRefresh") {
-            val error = BlocklistManager.refresh(this, prefs.blocklistUrl)
-            if (error != null) Log.w(TAG, "Auto refresh failed: $error")
+    /**
+     * Low-cost periodic housekeeping while the VPN runs: weekly blocklist refresh
+     * and daily update check, both self-throttled by timestamps in prefs. The thread
+     * spends its life asleep, so this costs nothing between iterations.
+     */
+    private fun startMaintenanceThread(prefs: Prefs) {
+        if (maintenanceThread?.isAlive == true) return
+        maintenanceThread = thread(name = "Maintenance", isDaemon = true) {
+            while (!stopping) {
+                try {
+                    if (prefs.autoRefresh &&
+                        System.currentTimeMillis() - prefs.lastRefreshMillis > REFRESH_INTERVAL_MS
+                    ) {
+                        val error = BlocklistManager.refresh(this, prefs.blocklistUrl)
+                        if (error != null) Log.w(TAG, "Blocklist auto refresh failed: $error")
+                    }
+                    UpdateManager.maybeDailyCheck(this)
+                } catch (e: Exception) {
+                    Log.w(TAG, "Maintenance pass failed: ${e.message}")
+                }
+                try {
+                    Thread.sleep(MAINTENANCE_INTERVAL_MS)
+                } catch (e: InterruptedException) {
+                    break
+                }
+            }
         }
     }
 
@@ -200,6 +221,8 @@ class AdBlockVpnService : VpnService() {
         closeInterface() // unblocks the read loop
         vpnThread?.interrupt()
         vpnThread = null
+        maintenanceThread?.interrupt()
+        maintenanceThread = null
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
     }
 
@@ -227,6 +250,7 @@ class AdBlockVpnService : VpnService() {
         private const val VPN_ADDRESS = "10.111.222.1"
         private const val VPN_DNS = "10.111.222.2"
         private const val REFRESH_INTERVAL_MS = 7L * 24 * 60 * 60 * 1000 // weekly
+        private const val MAINTENANCE_INTERVAL_MS = 6L * 60 * 60 * 1000  // wake every 6h
 
         val queriesTotal = AtomicLong()
         val queriesBlocked = AtomicLong()
