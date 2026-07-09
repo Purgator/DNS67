@@ -21,6 +21,28 @@ object BlocklistManager {
     private const val HOSTS_FILE = "hosts_downloaded.txt"
     private const val MIN_VALID_DOWNLOAD_BYTES = 1024L
 
+    /**
+     * Payment and anti-fraud services that many blocklists include (they do fingerprint
+     * devices) but whose loss silently breaks card payments and checkouts — 3-D Secure
+     * risk checks fail and the transaction is rejected even after the bank approves it
+     * (ThreatMetrix, DataDome, iovation…). Allowed by default; a user can re-block one
+     * by putting the exact domain in their custom blocked list.
+     */
+    internal val PAYMENT_ALLOWLIST = setOf(
+        "online-metrix.net",     // ThreatMetrix / LexisNexis, used by most banks' 3DS
+        "datadome.co",           // bot protection (SNCF Connect, many French sites)
+        "iesnare.com",           // iovation
+        "iovation.com",
+        "forter.com",
+        "riskified.com",
+        "kount.com",
+        "signifyd.com",
+        "sift.com",
+        "cardinalcommerce.com",  // Visa 3-D Secure
+        "ravelin.com",
+        "seon.io",
+    )
+
     @Volatile private var blocked: Set<String> = emptySet()
     @Volatile private var allowed: Set<String> = emptySet()
 
@@ -56,8 +78,9 @@ object BlocklistManager {
             }
         }
 
-        set.addAll(prefs.customBlocked)
-        val allowSet = prefs.customAllowed.toHashSet()
+        val customBlocked = prefs.customBlocked
+        set.addAll(customBlocked)
+        val allowSet = buildAllowSet(prefs.customAllowed, customBlocked)
 
         blocked = set
         allowed = allowSet
@@ -66,9 +89,52 @@ object BlocklistManager {
         Log.i(TAG, "Loaded $source blocklist: ${set.size} domains, ${allowSet.size} allowed")
     }
 
+    /**
+     * The effective allowlist: the user's own entries plus the built-in payment
+     * allowlist, minus anything the user explicitly re-blocked.
+     */
+    internal fun buildAllowSet(
+        customAllowed: Collection<String>,
+        customBlocked: Collection<String>,
+    ): HashSet<String> {
+        val allow = customAllowed.toHashSet()
+        allow.addAll(PAYMENT_ALLOWLIST - customBlocked.toSet())
+        return allow
+    }
+
     fun ensureLoaded(context: Context) {
         if (!isLoaded) load(context)
     }
+
+    // ------------------------------------------------------------------ blocked-domain log
+
+    class BlockedEvent(val domain: String) {
+        var count: Int = 1
+        var lastSeen: Long = System.currentTimeMillis()
+    }
+
+    private const val BLOCK_LOG_CAPACITY = 100
+    private val blockLog = object : LinkedHashMap<String, BlockedEvent>(64, 0.75f, true) {
+        override fun removeEldestEntry(eldest: Map.Entry<String, BlockedEvent>): Boolean =
+            size > BLOCK_LOG_CAPACITY
+    }
+
+    /** Called from the packet path for every blocked query. Cheap: map upsert. */
+    fun recordBlocked(domain: String) {
+        synchronized(blockLog) {
+            val event = blockLog[domain]
+            if (event != null) {
+                event.count++
+                event.lastSeen = System.currentTimeMillis()
+            } else {
+                blockLog[domain] = BlockedEvent(domain)
+            }
+        }
+    }
+
+    /** Most recently blocked domains first. */
+    fun recentlyBlocked(): List<BlockedEvent> =
+        synchronized(blockLog) { blockLog.values.sortedByDescending { it.lastSeen } }
 
     /** True when [domain] or any of its parent domains is on the block list. */
     fun isBlocked(domain: String): Boolean {

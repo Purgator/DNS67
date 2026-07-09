@@ -74,6 +74,7 @@ class PacketProcessor(
 
         if (domain != null && BlocklistManager.isBlocked(domain)) {
             AdBlockVpnService.queriesBlocked.incrementAndGet()
+            BlocklistManager.recordBlocked(domain)
             val response = PacketCraft.buildBlockedDnsResponse(packet, dnsOffset, dnsLength)
             if (response != null) {
                 writeToTun(
