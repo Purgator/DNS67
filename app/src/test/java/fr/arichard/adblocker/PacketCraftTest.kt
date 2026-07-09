@@ -96,6 +96,8 @@ class PacketCraftTest {
         val ans = resp.size - 16                                          // answer start
         assertEquals(0xC00C, PacketCraft.u16(resp, ans))                  // name pointer
         assertEquals(PacketCraft.QTYPE_A, PacketCraft.u16(resp, ans + 2))
+        val ttl = PacketCraft.u32(resp, ans + 6)                          // short TTL: fast un-block
+        assertTrue("TTL must be 1..120s, was $ttl", ttl in 1L..120L)
         assertEquals(4, PacketCraft.u16(resp, ans + 10))                  // RDLENGTH
         for (i in 0 until 4) assertEquals(0, resp[ans + 12 + i].toInt())  // 0.0.0.0
     }

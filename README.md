@@ -26,6 +26,10 @@ browsing traffic, and nothing leaves your device.
 - **Recently blocked viewer** — when a site or app misbehaves, open *Recently blocked*
   on the main screen right after the failure; the culprit domain is near the top and
   one tap allowlists it.
+- **Quick Settings tile** — toggle blocking from the notification shade (add it via the
+  tile editor).
+- **Private DNS conflict detection** — the main screen warns when strict Private DNS is
+  bypassing the filter, with a shortcut to the right settings page.
 - Subdomain matching: blocking `doubleclick.net` also blocks `stats.doubleclick.net`.
 
 ## 📥 Download & install (2 minutes, no technical skills needed)

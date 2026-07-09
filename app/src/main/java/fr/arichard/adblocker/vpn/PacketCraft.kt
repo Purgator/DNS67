@@ -94,7 +94,9 @@ object PacketCraft {
             resp[a++] = 0xC0.toByte(); resp[a++] = 0x0C                // name: pointer to question
             put16(resp, a, qtype); a += 2
             put16(resp, a, 1); a += 2                                  // class IN
-            resp[a++] = 0; resp[a++] = 0; resp[a++] = 1; resp[a++] = 0x2C // TTL 300s
+            // Short TTL (60s) so allowlisting a domain takes effect quickly despite
+            // client-side DNS caches.
+            resp[a++] = 0; resp[a++] = 0; resp[a++] = 0; resp[a++] = 60
             put16(resp, a, rdata.size); a += 2
             System.arraycopy(rdata, 0, resp, a, rdata.size)
         }

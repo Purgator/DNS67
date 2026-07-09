@@ -14,11 +14,15 @@ import android.os.Looper
 import android.text.format.DateUtils
 import android.util.Log
 import android.widget.Toast
+import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import fr.arichard.adblocker.core.BlocklistManager
 import fr.arichard.adblocker.core.Prefs
+import fr.arichard.adblocker.core.UpdateManager
 import fr.arichard.adblocker.databinding.ActivityMainBinding
 import fr.arichard.adblocker.vpn.AdBlockVpnService
 import kotlin.concurrent.thread
@@ -83,11 +87,19 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
+        binding.privateDnsWarning.setOnClickListener {
+            try {
+                startActivity(Intent(Settings.ACTION_WIRELESS_SETTINGS))
+            } catch (e: Exception) {
+                startActivity(Intent(Settings.ACTION_SETTINGS))
+            }
+        }
+
         // Load the blocklist early so the domain counter is meaningful right away,
         // and take the opportunity to run the daily (self-throttled) update check.
         thread {
             BlocklistManager.ensureLoaded(applicationContext)
-            fr.arichard.adblocker.core.UpdateManager.maybeDailyCheck(applicationContext)
+            UpdateManager.maybeDailyCheck(applicationContext)
         }
     }
 
@@ -167,12 +179,25 @@ class MainActivity : AppCompatActivity() {
             else ->
                 getString(R.string.vpn_consent_message)
         }
-        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.vpn_consent_title)
             .setMessage(message)
             .setPositiveButton(R.string.try_again) { _, _ -> requestVpnConsent() }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
+    }
+
+    /** True when strict Private DNS is configured, which bypasses the DNS filter entirely. */
+    private fun strictPrivateDnsActive(): Boolean {
+        if (Build.VERSION.SDK_INT < 28) return false
+        return try {
+            val cm = getSystemService(ConnectivityManager::class.java) ?: return false
+            cm.allNetworks.any { network ->
+                cm.getLinkProperties(network)?.privateDnsServerName != null
+            }
+        } catch (e: Exception) {
+            false
+        }
     }
 
     private fun startVpn() {
@@ -205,6 +230,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun refreshStatus() {
         val running = AdBlockVpnService.isRunning
+        binding.privateDnsWarning.isVisible = running && strictPrivateDnsActive()
         binding.statusText.setText(if (running) R.string.status_on else R.string.status_off)
         binding.statusText.setTextColor(
             ContextCompat.getColor(this, if (running) R.color.status_on else R.color.status_off)
