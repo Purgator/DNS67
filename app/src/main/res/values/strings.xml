@@ -17,7 +17,7 @@
     <string name="refresh_done">Blocklist updated: %1$d domains</string>
     <string name="refresh_failed">Update failed: %1$s</string>
 
-    <string name="vpn_permission_denied">The VPN permission is required to filter DNS queries.</string>
+    <string name="private_dns_warning">⚠ Private DNS is enabled and bypasses DNS67 — tap here, then set Private DNS to "Automatic" or "Off"</string>
     <string name="vpn_consent_title">VPN permission needed</string>
     <string name="vpn_consent_message">To filter DNS queries, Android must allow this app to act as a local VPN. Nothing is sent to any server — filtering happens entirely on your phone.\n\nTap "Try again" and choose OK in the Android dialog.</string>
     <string name="try_again">Try again</string>
@@ -38,14 +38,10 @@
     <string name="pref_upstream_dns2">Fallback DNS server</string>
     <string name="pref_upstream_dns2_summary">Used when the primary server does not answer (default 8.8.8.8)</string>
     <string name="pref_category_blocklist">Blocklist</string>
-    <string name="pref_blocklist_url">Blocklist URL</string>
-    <string name="pref_blocklist_url_summary">Hosts-format list downloaded on update</string>
     <string name="pref_auto_refresh">Auto-update blocklist</string>
     <string name="pref_auto_refresh_summary">Download a fresh list about once a week</string>
     <string name="pref_custom_blocked">Extra blocked domains</string>
-    <string name="pref_custom_blocked_summary">One domain per line; subdomains are blocked too</string>
     <string name="pref_custom_allowed">Allowed domains</string>
-    <string name="pref_custom_allowed_summary">Never block these domains (overrides the blocklist)</string>
     <string name="pref_category_startup">Startup</string>
     <string name="pref_auto_start">Start on boot</string>
     <string name="pref_auto_start_summary">Resume blocking automatically after a restart</string>
@@ -67,7 +63,6 @@
     <string name="allow_domain_title">Allow %1$s?</string>
     <string name="allow_domain_message">This domain (and its subdomains) will never be blocked again. Use this when a website, app, or payment stops working — the change applies immediately.</string>
     <string name="allow">Allow</string>
-    <string name="close">Close</string>
     <string name="domain_allowed_toast">%1$s is now allowed</string>
 
     <string name="pref_blocklist">Blocklist</string>

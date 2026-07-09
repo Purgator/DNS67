@@ -28,6 +28,19 @@
             android:textSize="22sp"
             android:textStyle="bold" />
 
+        <TextView
+            android:id="@+id/privateDnsWarning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:gravity="center"
+            android:padding="8dp"
+            android:text="@string/private_dns_warning"
+            android:textColor="@color/warning"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/toggleButton"
             android:layout_width="match_parent"

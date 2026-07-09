@@ -55,6 +55,11 @@ class PacketProcessor(
         val ihl = (packet[0].toInt() and 0x0F) * 4
         if (ihl < PacketCraft.IP4_HEADER || length < ihl) return
 
+        // Fragmented datagrams (offset != 0 or MF set) can't be parsed as UDP/DNS —
+        // treating a later fragment's payload as a header would read garbage. With our
+        // large tun MTU they should never occur; drop defensively.
+        if (PacketCraft.u16(packet, 6) and 0x3FFF != 0) return
+
         when (packet[9].toInt() and 0xFF) {
             PacketCraft.PROTO_UDP -> handleUdp(packet, length, ihl)
             PacketCraft.PROTO_TCP -> PacketCraft.buildTcpRst(packet, length, ihl)?.let { writeToTun(it) }
@@ -80,8 +85,11 @@ class PacketProcessor(
         if (domain != null && BlocklistManager.isBlocked(domain)) {
             AdBlockVpnService.queriesBlocked.incrementAndGet()
             val uid = resolveQueryUid(clientIp, srcPort, serverIp)
-            BlocklistManager.recordBlocked(domain, uid)
-            if (prefs.debugNotifications) DebugNotifier.notifyBlocked(vpnService, domain, uid)
+            // Lowercase for the log: DNS names are case-insensitive and some resolvers
+            // randomize case (0x20 encoding), which would split log entries.
+            val logDomain = domain.lowercase()
+            BlocklistManager.recordBlocked(logDomain, uid)
+            if (prefs.debugNotifications) DebugNotifier.notifyBlocked(vpnService, logDomain, uid)
             val response = PacketCraft.buildBlockedDnsResponse(packet, dnsOffset, dnsLength)
             if (response != null) {
                 writeToTun(
