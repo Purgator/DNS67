@@ -49,4 +49,16 @@
     <string name="pref_category_startup">Démarrage</string>
     <string name="pref_auto_start">Démarrer au démarrage</string>
     <string name="pref_auto_start_summary">Reprendre le blocage automatiquement après un redémarrage</string>
+
+    <string name="pref_category_updates">Mises à jour</string>
+    <string name="pref_auto_update">Vérification automatique</string>
+    <string name="pref_auto_update_summary">Vérifie GitHub chaque jour ; télécharge en Wi-Fi et notifie quand une nouvelle version est prête</string>
+    <string name="pref_check_updates">Vérifier les mises à jour</string>
+    <string name="pref_check_updates_summary">Version actuelle : %1$s</string>
+    <string name="update_channel">Mises à jour de l\'appli</string>
+    <string name="update_ready_title">DNS67 %1$s est prêt à installer</string>
+    <string name="update_ready_text">Appuyez pour installer la mise à jour</string>
+    <string name="update_checking">Recherche de mises à jour…</string>
+    <string name="update_none">Vous êtes à jour (v%1$s)</string>
+    <string name="update_error">Échec de la vérification : %1$s</string>
 </resources>

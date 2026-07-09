@@ -2,11 +2,14 @@ package fr.arichard.adblocker
 
 import android.os.Bundle
 import android.text.InputType
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.EditTextPreference
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import fr.arichard.adblocker.core.BlocklistManager
 import fr.arichard.adblocker.core.Prefs
+import fr.arichard.adblocker.core.UpdateManager
 import kotlin.concurrent.thread
 
 class SettingsActivity : AppCompatActivity() {
@@ -54,6 +57,46 @@ class SettingsActivity : AppCompatActivity() {
                     it.minLines = 3
                 }
             }
+
+            findPreference<Preference>(KEY_CHECK_UPDATES)?.apply {
+                summary = getString(
+                    R.string.pref_check_updates_summary,
+                    UpdateManager.currentVersion(requireContext())
+                )
+                setOnPreferenceClickListener {
+                    checkForUpdates()
+                    true
+                }
+            }
+        }
+
+        private fun checkForUpdates() {
+            val appContext = requireContext().applicationContext
+            Toast.makeText(appContext, R.string.update_checking, Toast.LENGTH_SHORT).show()
+            thread {
+                val result = UpdateManager.check(appContext, allowDownload = true)
+                activity?.runOnUiThread {
+                    when (result.status) {
+                        UpdateManager.Status.UPDATE_READY -> {
+                            startActivity(UpdateManager.installIntent(appContext, result.version!!))
+                        }
+                        UpdateManager.Status.UP_TO_DATE -> Toast.makeText(
+                            appContext,
+                            getString(R.string.update_none, result.version),
+                            Toast.LENGTH_LONG
+                        ).show()
+                        else -> Toast.makeText(
+                            appContext,
+                            getString(R.string.update_error, result.detail ?: "?"),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+            }
+        }
+
+        private companion object {
+            const val KEY_CHECK_UPDATES = "check_updates_now"
         }
     }
 }

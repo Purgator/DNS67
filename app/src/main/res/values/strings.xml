@@ -49,4 +49,16 @@
     <string name="pref_category_startup">Startup</string>
     <string name="pref_auto_start">Start on boot</string>
     <string name="pref_auto_start_summary">Resume blocking automatically after a restart</string>
+
+    <string name="pref_category_updates">Updates</string>
+    <string name="pref_auto_update">Automatic update check</string>
+    <string name="pref_auto_update_summary">Check GitHub daily; download over Wi-Fi and notify when a new version is ready</string>
+    <string name="pref_check_updates">Check for updates now</string>
+    <string name="pref_check_updates_summary">Current version: %1$s</string>
+    <string name="update_channel">App updates</string>
+    <string name="update_ready_title">DNS67 %1$s is ready to install</string>
+    <string name="update_ready_text">Tap to install the update</string>
+    <string name="update_checking">Checking for updates…</string>
+    <string name="update_none">You\'re up to date (v%1$s)</string>
+    <string name="update_error">Update check failed: %1$s</string>
 </resources>
