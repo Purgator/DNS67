@@ -179,3 +179,15 @@ Gotchas learned the hard way (do not regress):
   connection — so those features silently stop while a VPN runs. DNS67 opts out
   (`setMetered(false)`, since v1.10) so meteredness follows the underlying network again;
   if you see this on an older version, update.
+
+## License
+
+DNS67 is free software licensed under the **GNU General Public License v3.0** — see
+[LICENSE](LICENSE). You may use, study, share, and modify it; if you distribute a modified
+version, you must release your changes under the same license. This matches DNS66 and the
+other no-root ad blockers DNS67 is inspired by.
+
+Copyright © 2026 Aymeric Richard and contributors.
+
+The bundled blocklist is [StevenBlack/hosts](https://github.com/StevenBlack/hosts)
+(MIT-licensed), used unmodified.
