@@ -30,6 +30,10 @@
     <string name="notification_title">Blocage des pubs actif</string>
     <string name="notification_text">Les requêtes DNS vers les domaines publicitaires sont bloquées</string>
     <string name="action_stop">Arrêter</string>
+    <string name="action_start">Démarrer</string>
+    <string name="notification_stopped_title">Blocage des pubs arrêté</string>
+    <string name="notification_stopped_text">Appuyez sur Démarrer pour reprendre la protection</string>
+    <string name="notification_consent_text">Ouvrez l\'appli pour ré-autoriser le VPN</string>
 
     <string name="settings_title">Paramètres</string>
     <string name="pref_category_dns">DNS</string>
