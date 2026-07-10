@@ -80,6 +80,13 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <!-- Receives the update-notification tap and PackageInstaller status callbacks.
+             Not exported: it is only ever targeted by our own explicit PendingIntents. -->
+        <receiver
+            android:name=".core.ApkInstaller$Receiver"
+            android:enabled="true"
+            android:exported="false" />
+
         <receiver
             android:name=".core.BootReceiver"
             android:enabled="true"

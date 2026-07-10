@@ -8,7 +8,6 @@ import android.content.Intent
 import android.net.ConnectivityManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.content.FileProvider
 import fr.arichard.adblocker.R
 import org.json.JSONObject
 import java.io.File
@@ -110,14 +109,9 @@ object UpdateManager {
         }
     }
 
-    /** Intent that opens the system installer for the downloaded update. */
-    fun installIntent(context: Context, version: String): Intent {
-        val uri = FileProvider.getUriForFile(
-            context, "${context.packageName}.fileprovider", apkFile(context, version)
-        )
-        return Intent(Intent.ACTION_VIEW)
-            .setDataAndType(uri, "application/vnd.android.package-archive")
-            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+    /** Starts installing the downloaded update APK for [version]. */
+    fun install(context: Context, version: String) {
+        ApkInstaller.install(context, apkFile(context, version))
     }
 
     private fun notifyUpdateReady(context: Context, version: String) {
@@ -130,8 +124,11 @@ object UpdateManager {
                 NotificationManager.IMPORTANCE_DEFAULT
             )
         )
-        val pending = PendingIntent.getActivity(
-            context, 3, installIntent(context, version), PendingIntent.FLAG_IMMUTABLE
+        val installIntent = Intent(context, ApkInstaller.Receiver::class.java)
+            .setAction(ApkInstaller.ACTION_START_INSTALL)
+            .putExtra(ApkInstaller.EXTRA_VERSION, version)
+        val pending = PendingIntent.getBroadcast(
+            context, 3, installIntent, PendingIntent.FLAG_IMMUTABLE
         )
         manager.notify(
             NOTIFICATION_ID,
