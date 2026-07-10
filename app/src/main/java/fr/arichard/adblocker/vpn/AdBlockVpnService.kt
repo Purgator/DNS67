@@ -106,12 +106,15 @@ class AdBlockVpnService : VpnService() {
             Intent(this, MainActivity::class.java),
             PendingIntent.FLAG_IMMUTABLE
         )
+        // FLAG_UPDATE_CURRENT is load-bearing: PendingIntents are cached by request code
+        // and intent *without extras*, so without it the system can keep serving a stale
+        // intent (e.g. from before an app update) with EXTRA_FROM_NOTIFICATION missing.
         val stopIntent = PendingIntent.getService(
             this, 1,
             Intent(this, AdBlockVpnService::class.java)
                 .setAction(ACTION_STOP)
                 .putExtra(EXTRA_FROM_NOTIFICATION, true),
-            PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_shield)
