@@ -30,6 +30,10 @@
     <string name="notification_title">Ad blocking active</string>
     <string name="notification_text">DNS queries to ad domains are being blocked</string>
     <string name="action_stop">Stop</string>
+    <string name="action_start">Start</string>
+    <string name="notification_stopped_title">Ad blocking stopped</string>
+    <string name="notification_stopped_text">Tap Start to resume protection</string>
+    <string name="notification_consent_text">Open the app to re-allow the VPN</string>
 
     <string name="settings_title">Settings</string>
     <string name="pref_category_dns">DNS</string>
