@@ -150,8 +150,11 @@ object UpdateManager {
         val installIntent = Intent(context, ApkInstaller.Receiver::class.java)
             .setAction(ApkInstaller.ACTION_START_INSTALL)
             .putExtra(ApkInstaller.EXTRA_VERSION, version)
+        // FLAG_UPDATE_CURRENT: the version travels as an extra, and cached PendingIntents
+        // keep their old extras unless explicitly updated.
         val pending = PendingIntent.getBroadcast(
-            context, 3, installIntent, PendingIntent.FLAG_IMMUTABLE
+            context, 3, installIntent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         manager.notify(
             NOTIFICATION_ID,
