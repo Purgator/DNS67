@@ -39,11 +39,27 @@ class AdBlockVpnService : VpnService() {
         if (intent?.action == ACTION_STOP) {
             Prefs(this).vpnDesired = false
             shutdown()
+            // Stopped from the notification: leave a dismissible one behind so blocking
+            // can be resumed from the shade without opening the app.
+            if (intent.getBooleanExtra(EXTRA_FROM_NOTIFICATION, false)) {
+                postStoppedNotification(consentNeeded = false)
+            }
             stopSelf()
             return START_NOT_STICKY
         }
 
         startAsForeground()
+
+        // Consent can be revoked in system settings while we're stopped; without it
+        // establish() can never succeed, so tell the user instead of failing silently.
+        if (prepare(this) != null) {
+            Log.w(TAG, "VPN consent missing, cannot start")
+            ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
+            postStoppedNotification(consentNeeded = true)
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        notificationManager.cancel(STOPPED_NOTIFICATION_ID)
 
         // Already running or still starting up: don't spawn a second loop.
         if (vpnThread?.isAlive == true) return START_STICKY
@@ -55,6 +71,9 @@ class AdBlockVpnService : VpnService() {
         vpnThread = thread(name = "AdBlockVpn") { runVpn() }
         return START_STICKY
     }
+
+    private val notificationManager: NotificationManager
+        get() = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     private fun startAsForeground() {
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -84,7 +103,9 @@ class AdBlockVpnService : VpnService() {
         )
         val stopIntent = PendingIntent.getService(
             this, 1,
-            Intent(this, AdBlockVpnService::class.java).setAction(ACTION_STOP),
+            Intent(this, AdBlockVpnService::class.java)
+                .setAction(ACTION_STOP)
+                .putExtra(EXTRA_FROM_NOTIFICATION, true),
             PendingIntent.FLAG_IMMUTABLE
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
@@ -95,6 +116,35 @@ class AdBlockVpnService : VpnService() {
             .setOngoing(true)
             .addAction(0, getString(R.string.action_stop), stopIntent)
             .build()
+    }
+
+    /**
+     * Dismissible notification shown after stopping from the shade (with a Start action),
+     * or when a start attempt found the VPN consent revoked (tap opens the app).
+     */
+    private fun postStoppedNotification(consentNeeded: Boolean) {
+        val openIntent = PendingIntent.getActivity(
+            this, 0,
+            Intent(this, MainActivity::class.java),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_shield)
+            .setContentTitle(getString(R.string.notification_stopped_title))
+            .setContentIntent(openIntent)
+            .setAutoCancel(true)
+        if (consentNeeded) {
+            builder.setContentText(getString(R.string.notification_consent_text))
+        } else {
+            val startIntent = PendingIntent.getForegroundService(
+                this, 6,
+                Intent(this, AdBlockVpnService::class.java).setAction(ACTION_START),
+                PendingIntent.FLAG_IMMUTABLE
+            )
+            builder.setContentText(getString(R.string.notification_stopped_text))
+            builder.addAction(0, getString(R.string.action_start), startIntent)
+        }
+        notificationManager.notify(STOPPED_NOTIFICATION_ID, builder.build())
     }
 
     private fun runVpn() {
@@ -247,9 +297,11 @@ class AdBlockVpnService : VpnService() {
 
         const val ACTION_START = "fr.arichard.adblocker.action.START"
         const val ACTION_STOP = "fr.arichard.adblocker.action.STOP"
+        private const val EXTRA_FROM_NOTIFICATION = "from_notification"
 
         private const val CHANNEL_ID = "vpn_status"
         private const val NOTIFICATION_ID = 1
+        private const val STOPPED_NOTIFICATION_ID = 5
 
         private const val MTU = 32767
         private const val VPN_ADDRESS = "10.111.222.1"
