@@ -45,9 +45,10 @@ class Prefs(context: Context) {
         get() = sp.getLong(KEY_LAST_UPDATE_CHECK, 0L)
         set(value) = sp.edit().putLong(KEY_LAST_UPDATE_CHECK, value).apply()
 
-    var notifiedUpdateVersion: String?
-        get() = sp.getString(KEY_NOTIFIED_UPDATE_VERSION, null)
-        set(value) = sp.edit().putString(KEY_NOTIFIED_UPDATE_VERSION, value).apply()
+    /** True when a newer release was found but not yet downloaded (was on metered data). */
+    var updateDeferred: Boolean
+        get() = sp.getBoolean(KEY_UPDATE_DEFERRED, false)
+        set(value) = sp.edit().putBoolean(KEY_UPDATE_DEFERRED, value).apply()
 
     var debugNotifications: Boolean
         get() = sp.getBoolean(KEY_DEBUG_NOTIFICATIONS, false)
@@ -82,7 +83,7 @@ class Prefs(context: Context) {
         const val KEY_VPN_DESIRED = "vpn_desired"
         const val KEY_AUTO_UPDATE = "auto_update"
         const val KEY_LAST_UPDATE_CHECK = "last_update_check"
-        const val KEY_NOTIFIED_UPDATE_VERSION = "notified_update_version"
+        const val KEY_UPDATE_DEFERRED = "update_deferred"
         const val KEY_DEBUG_NOTIFICATIONS = "debug_notifications"
 
         const val DEFAULT_UPSTREAM = "1.1.1.1"

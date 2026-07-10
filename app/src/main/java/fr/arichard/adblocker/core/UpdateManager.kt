@@ -43,35 +43,58 @@ object UpdateManager {
     }
 
     /**
-     * Daily throttled check. Downloads only over unmetered networks and notifies
-     * at most once per new version. Call from a background thread.
+     * Best-effort background check, called from app open, the VPN maintenance loop, and
+     * whenever an unmetered network appears. Hardened so a pending update is never lost:
+     *
+     * - An already-downloaded update is re-surfaced on every call (local, no network), so
+     *   a missed/swiped notification always comes back — e.g. next time the app is opened.
+     * - The GitHub fetch is throttled to once per 24h, EXCEPT while an update is "deferred"
+     *   (found but not yet downloaded because we were on mobile data): then any unmetered
+     *   network appearing retries the download right away, instead of waiting out the day.
+     *
+     * Call from a background thread.
      */
     fun maybeDailyCheck(context: Context) {
         val appContext = context.applicationContext
         val prefs = Prefs(appContext)
         if (!prefs.autoUpdate) return
-        if (System.currentTimeMillis() - prefs.lastUpdateCheck < CHECK_INTERVAL_MS) return
+
+        // Re-surface an update that was already downloaded but not yet installed.
+        pendingDownloadedVersion(appContext)?.let { notifyUpdateReady(appContext, it) }
+
+        val due = System.currentTimeMillis() - prefs.lastUpdateCheck >= CHECK_INTERVAL_MS
+        if (!due && !prefs.updateDeferred) return
 
         val cm = appContext.getSystemService(ConnectivityManager::class.java)
         val unmetered = cm != null && !cm.isActiveNetworkMetered
         val result = check(appContext, allowDownload = unmetered)
-        if (result.status == Status.UPDATE_READY && prefs.notifiedUpdateVersion != result.version) {
-            prefs.notifiedUpdateVersion = result.version
+        // Deferred (found but couldn't download on metered data) is the only state that must
+        // stay retryable, so leave the flag set and let the next unmetered network retry it.
+        prefs.updateDeferred = result.status == Status.UPDATE_DEFERRED
+        prefs.lastUpdateCheck = System.currentTimeMillis()
+        if (result.status == Status.UPDATE_READY) {
             notifyUpdateReady(appContext, result.version!!)
         }
     }
 
+    /** Highest already-downloaded update newer than the installed app, or null. Local only. */
+    private fun pendingDownloadedVersion(context: Context): String? =
+        File(context.cacheDir, "updates").listFiles()
+            ?.filter { it.isFile && it.length() > 0 && it.name.endsWith(".apk") }
+            ?.map { it.name.removePrefix("DNS67-v").removeSuffix(".apk") }
+            ?.filter { isNewer(it, currentVersion(context)) }
+            ?.maxWithOrNull(::compareVersions)
+
     /**
      * Checks GitHub for a newer release and, if [allowDownload], fetches its APK
-     * into the cache. Call from a background thread.
+     * into the cache. Does not touch the throttle timestamp — the caller owns that.
+     * Call from a background thread.
      */
     @Synchronized
     fun check(context: Context, allowDownload: Boolean): Result {
         val appContext = context.applicationContext
-        val prefs = Prefs(appContext)
         return try {
             val json = JSONObject(httpGet(API_URL))
-            prefs.lastUpdateCheck = System.currentTimeMillis()
 
             val remote = json.getString("tag_name").removePrefix("v").trim()
             val current = currentVersion(appContext)
@@ -143,15 +166,17 @@ object UpdateManager {
     }
 
     /** True when [remote] is a strictly newer dotted version than [local]. */
-    internal fun isNewer(remote: String, local: String): Boolean {
-        val r = remote.split('.').map { it.filter(Char::isDigit).toIntOrNull() ?: 0 }
-        val l = local.split('.').map { it.filter(Char::isDigit).toIntOrNull() ?: 0 }
-        for (i in 0 until maxOf(r.size, l.size)) {
-            val a = r.getOrElse(i) { 0 }
-            val b = l.getOrElse(i) { 0 }
-            if (a != b) return a > b
+    internal fun isNewer(remote: String, local: String): Boolean = compareVersions(remote, local) > 0
+
+    /** Numeric dotted-version comparison: 1.10 > 1.9. Non-numeric parts count as 0. */
+    internal fun compareVersions(a: String, b: String): Int {
+        val x = a.split('.').map { it.filter(Char::isDigit).toIntOrNull() ?: 0 }
+        val y = b.split('.').map { it.filter(Char::isDigit).toIntOrNull() ?: 0 }
+        for (i in 0 until maxOf(x.size, y.size)) {
+            val cmp = x.getOrElse(i) { 0 }.compareTo(y.getOrElse(i) { 0 })
+            if (cmp != 0) return cmp
         }
-        return false
+        return 0
     }
 
     private fun apkFile(context: Context, version: String): File =

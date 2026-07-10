@@ -7,6 +7,10 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
@@ -30,6 +34,7 @@ class AdBlockVpnService : VpnService() {
     private var vpnThread: Thread? = null
     private var maintenanceThread: Thread? = null
     private var processor: PacketProcessor? = null
+    private var unmeteredCallback: ConnectivityManager.NetworkCallback? = null
 
     @Volatile private var stopping = false
 
@@ -259,6 +264,49 @@ class AdBlockVpnService : VpnService() {
                 }
             }
         }
+        registerUnmeteredCallback()
+    }
+
+    /**
+     * Runs the update check whenever an unmetered (Wi-Fi) network appears, so a pending
+     * download that was deferred on mobile data completes as soon as Wi-Fi is back — no
+     * waiting on the 6-hour maintenance tick. The check is self-throttled, so frequent
+     * callbacks are cheap.
+     */
+    private fun registerUnmeteredCallback() {
+        if (unmeteredCallback != null) return
+        val cm = getSystemService(ConnectivityManager::class.java) ?: return
+        val request = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+            .build()
+        val callback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                thread(name = "UpdateOnWifi", isDaemon = true) {
+                    try {
+                        UpdateManager.maybeDailyCheck(this@AdBlockVpnService)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Update check on network change failed: ${e.message}")
+                    }
+                }
+            }
+        }
+        try {
+            cm.registerNetworkCallback(request, callback)
+            unmeteredCallback = callback
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not register network callback: ${e.message}")
+        }
+    }
+
+    private fun unregisterUnmeteredCallback() {
+        val callback = unmeteredCallback ?: return
+        unmeteredCallback = null
+        try {
+            getSystemService(ConnectivityManager::class.java)?.unregisterNetworkCallback(callback)
+        } catch (e: Exception) {
+            // Already unregistered.
+        }
     }
 
     private fun closeInterface() {
@@ -273,6 +321,7 @@ class AdBlockVpnService : VpnService() {
     private fun shutdown() {
         stopping = true
         isRunning = false
+        unregisterUnmeteredCallback()
         closeInterface() // unblocks the read loop
         vpnThread?.interrupt()
         vpnThread = null
