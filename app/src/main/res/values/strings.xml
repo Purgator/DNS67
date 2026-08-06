@@ -59,6 +59,7 @@
     <string name="update_ready_title">DNS67 %1$s is ready to install</string>
     <string name="update_ready_text">Tap to install the update</string>
     <string name="update_checking">Checking for updates…</string>
+    <string name="update_installing">Installing DNS67 %1$s…</string>
     <string name="update_none">You\'re up to date (v%1$s)</string>
     <string name="update_error">Update check failed: %1$s</string>
 

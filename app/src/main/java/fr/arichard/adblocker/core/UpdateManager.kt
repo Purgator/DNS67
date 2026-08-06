@@ -26,6 +26,7 @@ import java.net.URL
 object UpdateManager {
 
     private const val TAG = "UpdateManager"
+    const val EXTRA_INSTALL_VERSION = "install_version"
     private const val API_URL = "https://api.github.com/repos/Purgator/DNS67/releases/latest"
     private const val ASSET_NAME = "DNS67.apk"
     private const val MAX_APK_BYTES = 50L * 1024 * 1024
@@ -137,6 +138,26 @@ object UpdateManager {
         ApkInstaller.install(context, apkFile(context, version))
     }
 
+    /**
+     * Installs [version], re-downloading first if its APK is missing or incomplete
+     * (stale notification, cleaned cache…). Call from a background thread with the
+     * app in the foreground, so any system confirmation can be shown.
+     */
+    fun ensureAndInstall(context: Context, version: String) {
+        val appContext = context.applicationContext
+        val apk = apkFile(appContext, version)
+        if (apk.isFile && apk.length() > 0) {
+            ApkInstaller.install(appContext, apk)
+            return
+        }
+        val result = check(appContext, allowDownload = true)
+        when (result.status) {
+            Status.UPDATE_READY -> ApkInstaller.install(appContext, apkFile(appContext, result.version!!))
+            Status.UP_TO_DATE -> Log.i(TAG, "ensureAndInstall: already up to date")
+            else -> Log.w(TAG, "ensureAndInstall failed: ${result.detail}")
+        }
+    }
+
     private fun notifyUpdateReady(context: Context, version: String) {
         val manager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -147,12 +168,13 @@ object UpdateManager {
                 NotificationManager.IMPORTANCE_DEFAULT
             )
         )
-        val installIntent = Intent(context, ApkInstaller.Receiver::class.java)
-            .setAction(ApkInstaller.ACTION_START_INSTALL)
-            .putExtra(ApkInstaller.EXTRA_VERSION, version)
-        // FLAG_UPDATE_CURRENT: the version travels as an extra, and cached PendingIntents
-        // keep their old extras unless explicitly updated.
-        val pending = PendingIntent.getBroadcast(
+        // Open the app rather than firing a receiver: notification → receiver → activity
+        // is a "trampoline", which Android 12+ blocks silently. MainActivity picks up the
+        // extra and drives the install from the foreground. FLAG_UPDATE_CURRENT because
+        // the version travels as an extra and cached PendingIntents keep stale extras.
+        val installIntent = Intent(context, fr.arichard.adblocker.MainActivity::class.java)
+            .putExtra(EXTRA_INSTALL_VERSION, version)
+        val pending = PendingIntent.getActivity(
             context, 3, installIntent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )

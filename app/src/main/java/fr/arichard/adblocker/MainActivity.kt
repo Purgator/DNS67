@@ -101,6 +101,22 @@ class MainActivity : AppCompatActivity() {
             BlocklistManager.ensureLoaded(applicationContext)
             UpdateManager.maybeDailyCheck(applicationContext)
         }
+
+        handleInstallRequest(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleInstallRequest(intent)
+    }
+
+    /** The update notification opens the app with the version to install as an extra. */
+    private fun handleInstallRequest(intent: Intent?) {
+        val version = intent?.getStringExtra(UpdateManager.EXTRA_INSTALL_VERSION) ?: return
+        intent.removeExtra(UpdateManager.EXTRA_INSTALL_VERSION)
+        Toast.makeText(this, getString(R.string.update_installing, version), Toast.LENGTH_SHORT)
+            .show()
+        thread { UpdateManager.ensureAndInstall(applicationContext, version) }
     }
 
     override fun onResume() {

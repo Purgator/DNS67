@@ -260,7 +260,7 @@ class SettingsActivity : AppCompatActivity() {
                 activity?.runOnUiThread {
                     when (result.status) {
                         UpdateManager.Status.UPDATE_READY ->
-                            UpdateManager.install(appContext, result.version!!)
+                            thread { UpdateManager.ensureAndInstall(appContext, result.version!!) }
                         UpdateManager.Status.UP_TO_DATE ->
                             toast(getString(R.string.update_none, result.version))
                         else ->
