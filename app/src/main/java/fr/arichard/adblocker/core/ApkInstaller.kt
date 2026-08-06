@@ -23,13 +23,14 @@ import java.io.File
 object ApkInstaller {
 
     private const val TAG = "ApkInstaller"
-    const val ACTION_START_INSTALL = "fr.arichard.adblocker.action.START_INSTALL"
     const val ACTION_INSTALL_STATUS = "fr.arichard.adblocker.action.INSTALL_STATUS"
-    const val EXTRA_VERSION = "version"
 
     fun install(context: Context, apk: File) {
         if (!apk.isFile || apk.length() <= 0) {
+            // Never fail silently: this happens when a stale notification points at a
+            // version whose file was cleaned up.
             Log.w(TAG, "APK missing or empty: $apk")
+            toast(context, context.getString(R.string.update_error, "update file missing"))
             return
         }
         try {
@@ -59,12 +60,15 @@ object ApkInstaller {
                     session.fsync(out)
                 }
             }
-            val callback = Intent(ACTION_INSTALL_STATUS)
-                .setPackage(context.packageName)
+            // The intent MUST name the receiver class explicitly: the manifest entry has
+            // no intent-filter, so an implicit (action-only) broadcast is never delivered
+            // and the session's status callback silently vanishes.
+            val callback = Intent(context, Receiver::class.java)
+                .setAction(ACTION_INSTALL_STATUS)
             val flags = if (Build.VERSION.SDK_INT >= 31) {
-                PendingIntent.FLAG_MUTABLE
+                PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             } else {
-                0
+                PendingIntent.FLAG_UPDATE_CURRENT
             }
             val pending = PendingIntent.getBroadcast(context, sessionId, callback, flags)
             session.commit(pending.intentSender)
@@ -82,19 +86,10 @@ object ApkInstaller {
         context.startActivity(intent)
     }
 
-    /**
-     * Receives both the "user tapped the update notification" trigger and the
-     * PackageInstaller status callbacks.
-     */
+    /** Receives the PackageInstaller status callbacks for committed sessions. */
     class Receiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            when (intent.action) {
-                ACTION_START_INSTALL -> {
-                    val version = intent.getStringExtra(EXTRA_VERSION) ?: return
-                    UpdateManager.install(context, version)
-                }
-                else -> handleStatus(context, intent)
-            }
+            handleStatus(context, intent)
         }
 
         private fun handleStatus(context: Context, intent: Intent) {
@@ -122,12 +117,13 @@ object ApkInstaller {
                 }
             }
         }
+    }
 
-        private fun toast(context: Context, message: String) {
-            android.os.Handler(android.os.Looper.getMainLooper()).post {
-                android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_LONG)
-                    .show()
-            }
+    private fun toast(context: Context, message: String) {
+        android.os.Handler(android.os.Looper.getMainLooper()).post {
+            android.widget.Toast.makeText(
+                context.applicationContext, message, android.widget.Toast.LENGTH_LONG
+            ).show()
         }
     }
 }
