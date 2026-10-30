@@ -182,7 +182,7 @@ Gotchas learned the hard way (do not regress):
 
 ## License
 
-DNS67 is free software licensed under the **GNU General Public License v3.0** — see
+DNS67 is free software licensed under the **GNU General Public License v3.0 or later (`GPL-3.0-or-later`)** — see
 [LICENSE](LICENSE). You may use, study, share, and modify it; if you distribute a modified
 version, you must release your changes under the same license. This matches DNS66 and the
 other no-root ad blockers DNS67 is inspired by.
