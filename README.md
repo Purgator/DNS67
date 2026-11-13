@@ -8,6 +8,14 @@ is to filter DNS: queries for known advertising/tracking domains are answered lo
 than DNS ever enters the tunnel, so there is no speed or battery penalty on your actual
 browsing traffic, and nothing leaves your device.
 
+<p align="center">
+  <img src="docs/home.png" width="240" alt="DNS67 main screen with protection active and live counters of DNS queries and blocked queries">
+  <img src="docs/recently-blocked.png" width="240" alt="Recently blocked screen listing the last blocked domains">
+  <img src="docs/settings.png" width="240" alt="Settings screen with upstream DNS servers and blocklist options">
+</p>
+
+<p align="center"><sub>One-tap protection with live counters · the recently blocked domains · the settings.</sub></p>
+
 ## Features
 
 - **One-tap start/stop** — big toggle button, live counters (queries seen / blocked).
